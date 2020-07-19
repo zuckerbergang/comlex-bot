@@ -21,3 +21,7 @@ async def _(session: CommandSession):
         return
     session.args[session.current_key] = session.current_arg_text
 
+
+@on_command('喵一个', aliases=['miao', '喵喵喵'])
+async def _(session: CommandSession):  # 为了补全session的方法
+    await session.send('喵~')
