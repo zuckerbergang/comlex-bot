@@ -32,8 +32,14 @@ async def _(session: CommandSession):
     u_age = msg['sender']['age']
     print(u_id, u_name, u_sex, u_age)
     sql_.add_uesr(u_id, u_name, u_sex, u_age)
-    # group_id = msg['group_id']
-    await session.send('成功参加打卡')
+    cre_a, na_a = sql_.select_user_credit(u_id)
+    if cre_a == -1:
+        await session.send('您已经参加打卡了哦~~~，希望你这个小马猴可以坚持下去呀')
+    else:
+        await session.send('成功参加打卡，希望马猴可以按时打卡哟~')
+        await session.send('打卡的规则：一天仅能打两次卡，高数一次，英语一次。')
+        await session.send('若要打卡，请艾特我发送需要打卡的科目')
+        await session.send('格式：英语打卡、英语、高数打卡、高数')
 
 
 # @on_command('打卡', aliases=['今日打卡'], permission=perm.GROUP_MEMBER)
@@ -58,7 +64,32 @@ async def _(session: CommandSession):
     u_id = msg['user_id']
     c_type = 'English'
     c_credit = 1
-    sql_.add_record(u_id, c_type, c_credit, today)
-    sql_.up_user(u_id, today)
+    flag = sql_.add_record(u_id, c_type, c_credit, today)
+    cre_a, na_a = sql_.select_user_credit(u_id)
+    if flag == -1:
+        await session.send(na_a+"，今日已打过英语，不能重复打卡")
+    else:
 
-    await session.send('打卡成功')
+        await session.send(na_a+'打卡成功')
+        await session.send('英语积分+1')
+        await session.send('当前总积分为'+str(cre_a))
+
+
+@on_command('高数打卡', aliases=['高数','数学'], permission=perm.GROUP_MEMBER)
+async def _(session: CommandSession):
+    msg = session.ctx
+    pprint(msg)
+    today = datetime.date.today()
+    u_id = msg['user_id']
+    c_type = 'Math'
+    c_credit = 1
+    flag = sql_.add_record(u_id, c_type, c_credit, today)
+    cre_a, na_a = sql_.select_user_credit(u_id)
+    if flag == -1:
+        await session.send(na_a+"，今日已打过高数，不能重复打卡")
+    else:
+
+        await session.send(na_a+'打卡成功')
+        await session.send('高数积分+1')
+        await session.send('当前总积分为'+str(cre_a))
+
