@@ -96,7 +96,7 @@ def select_user_credit(u_id):
     if user is not None:
         return user.credit_all, user.name
     else:
-        return -1
+        return -1, -1
 
 
 Base.metadata.drop_all()
