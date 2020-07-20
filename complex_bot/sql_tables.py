@@ -1,3 +1,7 @@
+"""
+这是用来对数据库进行操作的
+"""
+
 import sqlalchemy
 from sqlalchemy import Column, String, Integer, Date, create_engine, Enum, ForeignKey
 from sqlalchemy.orm import sessionmaker
@@ -99,7 +103,7 @@ def select_user_credit(u_id):
         return -1, -1
 
 
-Base.metadata.drop_all()
+# Base.metadata.drop_all()
 Base.metadata.create_all()
 
 # add_uesr(12, 12, 'male', 0)

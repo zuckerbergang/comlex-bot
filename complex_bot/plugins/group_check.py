@@ -1,8 +1,9 @@
 import datetime
 from pprint import pprint
-
+import requests
 from nonebot import on_command, CommandSession  # 命令的对话
 from nonebot import permission as perm
+
 from .. import sql_tables as sql_
 
 
@@ -35,12 +36,16 @@ async def _(session: CommandSession):
 
     if cre_a != -1:
         await session.send('您已经参加打卡了哦~~~，希望你这个小马猴可以坚持下去呀')
+        await session.send('其他想要参加打卡的马猴可以@我发送‘我要参加打卡’哦~~')
+        await session.send('打卡开放时间为6:00~8:20和18：00~21:00')
     else:
         sql_.add_uesr(u_id, u_name, u_sex, u_age)
         await session.send('成功参加打卡，希望马猴可以按时打卡哟~')
+        await session.send('打卡开放时间为6:00~8:20和18：00——21:00')
         await session.send('打卡的规则：一天仅能打两次卡，高数一次，英语一次。')
         await session.send('若要打卡，请艾特我发送需要打卡的科目')
         await session.send('格式：英语打卡、英语、高数打卡、高数')
+        await session.send('其他想要参加打卡的马猴可以@我发送‘我要参加打卡’哦~~')
 
 
 # @on_command('打卡', aliases=['今日打卡'], permission=perm.GROUP_MEMBER)
@@ -89,7 +94,6 @@ async def _(session: CommandSession):
     if flag == -1:
         await session.send(na_a + "，今日已打过高数，不能重复打卡")
     else:
-
         await session.send(na_a + '打卡成功')
         await session.send('高数积分+1')
         await session.send('当前总积分为' + str(cre_a))
@@ -102,6 +106,59 @@ async def _(session: CommandSession):
     u_id = msg['user_id']
     cre_a, na_a = sql_.select_user_credit(u_id)
     if cre_a != -1:
-        await session.send('当前总积分为' + str(cre_a))
+        await session.send(na_a + '当前总积分为' + str(cre_a))
     else:
         await session.send('暂时没有您的数据呢')
+
+
+@on_command('每日一句', aliases=['每日', '美句'], permission=perm.GROUP_MEMBER)
+async def _(session: CommandSession):
+    resp = requests.get(
+        'http://api.youngam.cn/api/one.php',
+        headers={
+            'User-Agent': 'Mozilla/5.0(Windows NT 10.0;Win64;x64) AppleWebKit/537.36 (KHTML, like Gercko) Chrome/71.0.3578.98 Safari/537.36'
+        }
+    )
+    data = resp.json()
+    pprint(data)
+    readings = data.get('data')
+
+    if not readings:
+        await session.send('诶呀，暂时没有数据呢~~')
+
+    reply = '每日一句：'
+    reading = readings[0]
+    title = reading.get('text', '未知内容')
+    reply += f'\n{title}\n'
+    # reply += '\n' + title + '\n' + url + '\n'
+    # reply += '\n{}\n{}\n'.format(title, url)
+    # reply += '\n%s\n%s\n' % (title, url)
+    await session.send(reply)
+
+
+@on_command('英文每日一句', aliases=['英文美句', '英语美句'], permission=perm.GROUP_MEMBER)
+async def _(session: CommandSession):
+    STORY_URL_FORMAT = 'http://daily.zhihu.com/story/{}'  # {}表示可以新嵌入一个值
+
+    resp = requests.get(
+        'http://open.iciba.com/dsapi/',
+        headers={
+            'User-Agent': 'Mozilla/5.0(Windows NT 10.0;Win64;x64) AppleWebKit/537.36 (KHTML, like Gercko) Chrome/71.0.3578.98 Safari/537.36'
+        }
+    )
+    data = resp.json()
+    pprint(data)
+    # stories = data['stories']
+    content = data.get('content')
+    note = data.get('note')
+
+    if not content:
+        await session.send('诶呀，暂时没有数据呢~~')
+
+    reply = '英文每日一句：'
+    # url = STORY_URL_FORMAT.format(reading['src'])
+    reply += f'\n{content}\n{note}\n'
+    # reply += '\n' + title + '\n' + url + '\n'
+    # reply += '\n{}\n{}\n'.format(title, url)
+    # reply += '\n%s\n%s\n' % (title, url)
+    await session.send(reply)
